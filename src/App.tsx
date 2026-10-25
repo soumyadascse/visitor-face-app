@@ -6,9 +6,6 @@ import VisitorHistory from "./pages/VisitorHistory";
 import VisitLogs from "./pages/VisitLogs";
 
 function App() {
-  console.log(import.meta.env);
-  console.log(import.meta.env.VITE_SUPABASE_URL);
-  console.log(import.meta.env.VITE_SUPABASE_KEY);
   return (
     <BrowserRouter>
       <Routes>

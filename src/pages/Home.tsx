@@ -40,8 +40,6 @@ export default function Home() {
         await loadModels();
 
         setModelsLoaded(true);
-
-        console.log("Models loaded");
       } catch (err) {
         console.error(err);
       }
@@ -104,10 +102,6 @@ export default function Home() {
 
       return;
     }
-
-    console.log("Scan clicked");
-    console.log(webcamRef.current);
-    console.log(result);
 
     const emotion =
       Object.entries(result.expressions)
