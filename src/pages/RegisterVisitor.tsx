@@ -115,7 +115,6 @@ export default function RegisterVisitor() {
   //   };
 
   const captureFace = async () => {
-    console.log("START CAPTURE");
     const video = webcamRef.current?.video as HTMLVideoElement;
 
     if (!video) {
@@ -133,26 +132,22 @@ export default function RegisterVisitor() {
       return;
     }
 
-    console.log("FACE FOUND");
-
     const screenshot = webcamRef.current?.getScreenshot();
 
-    console.log("Screenshot Value:", screenshot);
+    // console.log("Screenshot Value:", screenshot);
 
-    console.log("Webcam Ref:", webcamRef.current);
+    // console.log("Webcam Ref:", webcamRef.current);
 
-    console.log("Video Width:", webcamRef.current?.video?.videoWidth);
+    // console.log("Video Width:", webcamRef.current?.video?.videoWidth);
 
-    console.log("Video Height:", webcamRef.current?.video?.videoHeight);
+    // console.log("Video Height:", webcamRef.current?.video?.videoHeight);
 
     if (!screenshot) {
-      console.log("Screenshot is null");
       await warningAlert("Capture Failed", "Unable to capture image.");
 
       return;
     }
 
-    console.log("Screenshot Length:", screenshot.length);
 
     const liveDescriptor = Array.from(face.descriptor);
 
@@ -217,7 +212,6 @@ export default function RegisterVisitor() {
 
       setPhoto(screenshot);
     }
-    console.log("SETTING PHOTO");
 
     setFaceCaptured(true);
 
@@ -334,18 +328,12 @@ export default function RegisterVisitor() {
       let imageUrl = "";
 
       if (photo && photo.startsWith("data:image")) {
-        console.log("Uploading photo...");
-
         imageUrl = await uploadVisitorImage(photo);
-
-        console.log("Uploaded URL:", imageUrl);
       }
 
       await saveVisitor({
         ...form,
-
         imageUrl,
-
         faceDescriptor: descriptor,
       });
 
@@ -397,7 +385,6 @@ export default function RegisterVisitor() {
         <Webcam
           ref={webcamRef}
           onUserMedia={() => {
-            console.log("Camera Ready");
             setCameraReady(true);
           }}
           audio={false}
@@ -416,13 +403,13 @@ export default function RegisterVisitor() {
   "
         />
 
-        <div className="bg-gray-100 p-2 mb-2 text-sm">
+        {/* <div className="bg-gray-100 p-2 mb-2 text-sm">
           Face Captured: {faceCaptured ? "YES" : "NO"}
         </div>
 
         <div className="bg-gray-100 p-2 mb-2 text-sm">
           Photo Length: {photo.length}
-        </div>
+        </div> */}
 
         <button
           type="button"
@@ -570,10 +557,10 @@ export default function RegisterVisitor() {
           <p className="text-red-500 text-sm mb-4">{errors.gender}</p>
         )}
 
-        <div className="bg-yellow-100 p-2 mb-2">
+        {/* <div className="bg-yellow-100 p-2 mb-2">
           Photo State:
           {photo ? "AVAILABLE" : "EMPTY"}
-        </div>
+        </div> */}
 
         <button
           onClick={submit}
