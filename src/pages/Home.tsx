@@ -1,0 +1,200 @@
+import { useEffect, useRef, useState } from "react";
+
+import Webcam from "react-webcam";
+
+import Navbar from "../components/Navbar";
+import Camera from "../components/Camera";
+import VisitorCard from "../components/VisitorCard";
+
+import { loadModels } from "../services/faceService";
+
+import { useFaceDetection } from "../hooks/useFaceDetection";
+
+import { getVisitors, saveVisitLog } from "../services/visitorService";
+
+import { euclideanDistance } from "../services/faceRecognition";
+
+export default function Home() {
+  const webcamRef = useRef<Webcam | null>(null);
+
+  const { scanFace } = useFaceDetection();
+
+  interface VisitorDisplay {
+    id?: string;
+    name: string;
+    mobile?: string;
+    gender: string;
+    age: number;
+    emotion: string;
+    flat?: string;
+    purpose?: string;
+  }
+
+  const [visitor, setVisitor] = useState<VisitorDisplay | null>(null);
+
+  const [modelsLoaded, setModelsLoaded] = useState(false);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await loadModels();
+
+        setModelsLoaded(true);
+
+        console.log("Models loaded");
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    init();
+  }, []);
+
+  const handleScan = async () => {
+    if (!webcamRef.current) return;
+
+    const video = webcamRef.current.video as HTMLVideoElement;
+
+    const result = await scanFace(video);
+
+    if (!result) {
+      alert("Face not detected");
+      return;
+    }
+
+    type DbVisitor = {
+      id: string;
+      name: string;
+      mobile: string;
+      gender: string;
+      flat_number: string;
+      purpose: string;
+      image_url: string;
+      face_descriptor: number[];
+    };
+
+    const visitors: DbVisitor[] = (await getVisitors()) || [];
+
+    let matchedVisitor: DbVisitor | null = null;
+
+    const liveDescriptor = Array.from(result.descriptor);
+
+    let bestDistance = Number.MAX_VALUE;
+
+    visitors?.forEach((visitor: DbVisitor) => {
+      if (!visitor.face_descriptor) {
+        return;
+      }
+
+      const distance = euclideanDistance(
+        liveDescriptor,
+
+        visitor.face_descriptor,
+      );
+
+      if (distance < bestDistance) {
+        bestDistance = distance;
+
+        matchedVisitor = visitor;
+      }
+    });
+
+    if (!result) {
+      alert("Face not detected");
+
+      return;
+    }
+
+    console.log("Scan clicked");
+    console.log(webcamRef.current);
+    console.log(result);
+
+    const emotion =
+      Object.entries(result.expressions)
+        .sort((a, b) => Number(b[1]) - Number(a[1]))
+        ?.at(0)?.[0] ?? "neutral";
+
+    // setVisitor({
+    //   name: "Unknown Visitor",
+    //   age: Math.round(result.age),
+    //   gender: result.gender,
+    //   emotion,
+    // });
+
+    if (matchedVisitor !== null && bestDistance < 0.6) {
+      const visitorData = matchedVisitor as any;
+
+      await saveVisitLog({
+        visitor_id: visitorData.id,
+
+        visitor_name: visitorData.name,
+
+        flat_number: visitorData.flat_number,
+
+        image_url: visitorData.image_url,
+
+        emotion,
+
+        estimated_age: Math.round(result.age),
+      });
+
+      setVisitor({
+        id: visitorData.id,
+        name: visitorData.name,
+        mobile: visitorData.mobile,
+        gender: visitorData.gender,
+        flat: visitorData.flat_number,
+        purpose: visitorData.purpose,
+        age: Math.round(result.age),
+        emotion,
+      });
+    } else {
+      setVisitor({
+        name: "Unknown Visitor",
+
+        age: Math.round(result.age),
+
+        gender: result.gender,
+
+        emotion,
+      });
+    }
+  };
+
+  return (
+    <>
+      <Navbar />
+
+      <div
+        className="
+        max-w-4xl
+        mx-auto
+        p-6
+        "
+      >
+        <Camera webcamRef={webcamRef} />
+
+        <button
+          disabled={!modelsLoaded}
+          onClick={handleScan}
+          className="
+          mt-4
+          px-5
+          py-3
+          bg-green-600
+          text-white
+          rounded-lg
+          "
+        >
+          {modelsLoaded ? "Scan Visitor" : "Loading AI Models..."}
+        </button>
+
+        {visitor && (
+          <div className="mt-6">
+            <VisitorCard {...visitor} />
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
