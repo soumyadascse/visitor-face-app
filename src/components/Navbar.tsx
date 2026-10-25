@@ -11,7 +11,7 @@ export default function Navbar() {
       justify-between
       "
     >
-      <h2 className="font-bold">Visitor AI</h2>
+      <h2 className="font-bold">Visitor AI by Soumya Das</h2>
 
       <div className="space-x-4">
         <Link to="/">Home</Link>
