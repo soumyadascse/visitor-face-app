@@ -13,9 +13,11 @@ import { useFaceDetection } from "../hooks/useFaceDetection";
 import { getVisitors, saveVisitLog } from "../services/visitorService";
 
 import { euclideanDistance } from "../services/faceRecognition";
+import Footer from "../components/Footer";
 
 export default function Home() {
   const webcamRef = useRef<Webcam | null>(null);
+  const visitorCardRef = useRef<HTMLDivElement | null>(null);
 
   const { scanFace } = useFaceDetection();
 
@@ -33,6 +35,15 @@ export default function Home() {
   const [visitor, setVisitor] = useState<VisitorDisplay | null>(null);
 
   const [modelsLoaded, setModelsLoaded] = useState(false);
+
+  useEffect(() => {
+    if (visitor) {
+      visitorCardRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [visitor]);
 
   useEffect(() => {
     const init = async () => {
@@ -156,22 +167,23 @@ export default function Home() {
   };
 
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <Navbar />
 
-      <div
-        className="
-        max-w-4xl
-        mx-auto
-        p-6
-        "
-      >
-        <Camera webcamRef={webcamRef} />
-
-        <button
-          disabled={!modelsLoaded}
-          onClick={handleScan}
+      <main className="flex-1">
+        <div
           className="
+          max-w-4xl
+          mx-auto
+          p-6
+          "
+        >
+          <Camera webcamRef={webcamRef} />
+
+          <button
+            disabled={!modelsLoaded}
+            onClick={handleScan}
+            className="
           mt-4
           px-5
           py-3
@@ -179,16 +191,18 @@ export default function Home() {
           text-white
           rounded-lg
           "
-        >
-          {modelsLoaded ? "Scan Visitor" : "Loading AI Models..."}
-        </button>
+          >
+            {modelsLoaded ? "Scan Visitor" : "Loading AI Models..."}
+          </button>
 
-        {visitor && (
-          <div className="mt-6">
-            <VisitorCard {...visitor} />
-          </div>
-        )}
-      </div>
-    </>
+          {visitor && (
+            <div ref={visitorCardRef} className="mt-6">
+              <VisitorCard {...visitor} />
+            </div>
+          )}
+        </div>
+      </main>
+      <Footer />
+    </div>
   );
 }
