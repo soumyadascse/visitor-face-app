@@ -1,22 +1,31 @@
 import Webcam from "react-webcam";
-import type { RefObject } from "react";
 
 interface Props {
-  webcamRef: RefObject<Webcam | null>;
+  webcamRef: React.RefObject<Webcam | null>;
+  facingMode: "user" | "environment";
 }
 
 export default function Camera({
   webcamRef,
+  facingMode,
 }: Props) {
   return (
     <Webcam
       ref={webcamRef}
+      audio={false}
       screenshotFormat="image/jpeg"
-      mirrored
+      screenshotQuality={1}
+      mirrored={facingMode === "user"}
       videoConstraints={{
-        facingMode: "user",
+        facingMode,
+        width: 1280,
+        height: 720,
       }}
-      className="rounded-xl shadow-lg w-full"
+      className="
+        w-full
+        rounded-xl
+        shadow-lg
+      "
     />
   );
 }
