@@ -191,13 +191,13 @@ export default function RegisterVisitor() {
 
       setExistingVisitor(true);
 
-      setForm({
-        name: matchedVisitor.name,
-        mobile: matchedVisitor.mobile,
-        gender: matchedVisitor.gender,
-        flatNumber: matchedVisitor.flat_number,
-        purpose: matchedVisitor.purpose,
-      });
+      // setForm({
+      //   name: matchedVisitor.name,
+      //   mobile: matchedVisitor.mobile,
+      //   gender: matchedVisitor.gender,
+      //   flatNumber: matchedVisitor.flat_number,
+      //   purpose: matchedVisitor.purpose,
+      // });
 
       setDescriptor(matchedVisitor.face_descriptor);
 
