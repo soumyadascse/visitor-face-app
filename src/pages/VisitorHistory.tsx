@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Navbar from "../components/Navbar";
 import { getVisitors } from "../services/visitorService";
+import { maskMobile } from "../utils/common";
 
 interface Visitor {
   id: string;
@@ -147,7 +148,7 @@ export default function VisitorHistory() {
                     </td>
                     <td className="p-4 font-medium">{visitor.name}</td>
 
-                    <td className="p-4">{visitor.mobile}</td>
+                    <td className="p-4">{maskMobile(visitor.mobile)}</td>
 
                     <td className="p-4">{visitor.flat_number}</td>
 

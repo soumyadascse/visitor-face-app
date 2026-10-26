@@ -7,3 +7,25 @@ body {
   font-family: Inter, Arial, sans-serif;
   background: #f4f6f8;
 }
+
+@keyframes scanLine {
+
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(310px);
+  }
+
+}
+
+.animate-scan-line {
+
+  animation:
+    scanLine
+    1.5s
+    linear
+    infinite;
+
+}
