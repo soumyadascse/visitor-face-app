@@ -16,11 +16,13 @@ import { euclideanDistance } from "../services/faceRecognition";
 import Footer from "../components/Footer";
 import { warningAlert } from "../utils/notify";
 import FaceScanner from "../components/FaceScanner";
+import { speak } from "../utils/common";
 
 export default function Home() {
   const webcamRef = useRef<Webcam | null>(null);
   const visitorCardRef = useRef<HTMLDivElement | null>(null);
-
+  const scanAudio = new Audio("/audio/scanning.mp3");
+  const successAudio = new Audio("/audio/success.mp3");
   const { scanFace } = useFaceDetection();
 
   interface VisitorDisplay {
@@ -65,6 +67,7 @@ export default function Home() {
 
   const handleScan = async () => {
     setIsScanning(true);
+    scanAudio.play();
 
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
@@ -77,9 +80,9 @@ export default function Home() {
 
       if (!result) {
         await warningAlert(
-        "Face not detected",
-        "Please capture visitor face before registration.",
-      );
+          "Face not detected",
+          "Please capture visitor face before registration.",
+        );
         return;
       }
 
@@ -134,9 +137,9 @@ export default function Home() {
 
       if (!result) {
         await warningAlert(
-        "Face not detected",
-        "Please capture visitor face before registration.",
-      );
+          "Face not detected",
+          "Please capture visitor face before registration.",
+        );
 
         return;
       }
@@ -180,16 +183,31 @@ export default function Home() {
           age: Math.round(result.age),
           emotion,
         });
+
+        scanAudio.pause();
+        scanAudio.currentTime = 0;
+        successAudio.play();
+
+        // AUDIO Entry
+        speak(
+          `Visitor identified.
+          Name ${visitorData.name}.
+          Estimated age ${Math.round(result.age)}.
+          Gender ${visitorData.gender}.
+          Access granted.`
+        );
+
       } else {
         setVisitor({
           name: "Unknown Visitor",
-
           age: Math.round(result.age),
-
           gender: result.gender,
-
           emotion,
         });
+        speak(
+          `Unknown visitor detected.
+          Registration required.`
+        );
       }
     } finally {
       setIsScanning(false);
