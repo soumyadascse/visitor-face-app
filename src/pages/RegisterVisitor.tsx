@@ -185,8 +185,10 @@ export default function RegisterVisitor() {
           <p><b>Flat:</b> ${matchedVisitor.flat_number}</p>
         </div>
       `,
-        confirmButtonText: "Load Visitor",
+        confirmButtonText: "Okay",
       });
+
+      setExistingVisitor(true);
 
       setForm({
         name: matchedVisitor.name,
@@ -204,8 +206,11 @@ export default function RegisterVisitor() {
 
       return;
     }
-
+    // No existing visitor found
+    setExistingVisitor(false);
     setDescriptor(liveDescriptor);
+    setPhoto(screenshot);
+    setFaceCaptured(true);
 
     if (screenshot) {
       console.log("Screenshot length:", screenshot.length);
@@ -232,6 +237,7 @@ export default function RegisterVisitor() {
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
+  const [existingVisitor, setExistingVisitor] = useState(false);
 
   useEffect(() => {
     console.log("PHOTO STATE CHANGED:", photo);
@@ -470,6 +476,8 @@ export default function RegisterVisitor() {
           </div>
         )}
 
+        {!existingVisitor && (
+        <>
         <input
           value={form.name}
           placeholder="Visitor Name"
@@ -578,6 +586,8 @@ export default function RegisterVisitor() {
         >
           {loading ? "Saving..." : "Register Visitor"}
         </button>
+        </>
+        })
       </div>
     </>
   );
