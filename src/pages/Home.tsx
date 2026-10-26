@@ -90,22 +90,31 @@ export default function Home() {
 
     let bestDistance = Number.MAX_VALUE;
 
+    // const FACE_THRESHOLD = 0.5;
+
     visitors?.forEach((visitor: DbVisitor) => {
-      if (!visitor.face_descriptor) {
+      if (!visitor.face_descriptor || visitor.face_descriptor.length !== 128) {
         return;
       }
 
       const distance = euclideanDistance(
         liveDescriptor,
-
         visitor.face_descriptor,
       );
 
+      console.log(`Visitor: ${visitor.name} | Distance: ${distance}`);
+
       if (distance < bestDistance) {
         bestDistance = distance;
-
         matchedVisitor = visitor;
       }
+
+      // console.log(
+      //   "Best Match:",
+      //   matchedVisitor?.name,
+      //   "Distance:",
+      //   bestDistance,
+      // );
     });
 
     if (!result) {
@@ -126,7 +135,7 @@ export default function Home() {
     //   emotion,
     // });
 
-    if (matchedVisitor !== null && bestDistance < 0.6) {
+    if (matchedVisitor !== null && bestDistance < 0.50) {
       const visitorData = matchedVisitor as any;
 
       await saveVisitLog({
