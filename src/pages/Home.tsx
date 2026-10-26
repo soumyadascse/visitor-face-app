@@ -14,6 +14,7 @@ import { getVisitors, saveVisitLog } from "../services/visitorService";
 
 import { euclideanDistance } from "../services/faceRecognition";
 import Footer from "../components/Footer";
+import { warningAlert } from "../utils/notify";
 import FaceScanner from "../components/FaceScanner";
 
 export default function Home() {
@@ -75,7 +76,10 @@ export default function Home() {
       const result = await scanFace(video);
 
       if (!result) {
-        alert("Face not detected");
+        await warningAlert(
+        "Face not detected",
+        "Please capture visitor face before registration.",
+      );
         return;
       }
 
@@ -129,7 +133,10 @@ export default function Home() {
       });
 
       if (!result) {
-        alert("Face not detected");
+        await warningAlert(
+        "Face not detected",
+        "Please capture visitor face before registration.",
+      );
 
         return;
       }
