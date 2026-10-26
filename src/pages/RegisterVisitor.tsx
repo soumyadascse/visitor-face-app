@@ -115,6 +115,7 @@ export default function RegisterVisitor() {
   //   };
 
   const captureFace = async () => {
+    setExistingVisitor(false);
     const video = webcamRef.current?.video as HTMLVideoElement;
 
     if (!video) {
