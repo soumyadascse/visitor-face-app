@@ -14,6 +14,7 @@ import { getVisitors, saveVisitLog } from "../services/visitorService";
 
 import { euclideanDistance } from "../services/faceRecognition";
 import Footer from "../components/Footer";
+import FaceScanner from "../components/FaceScanner";
 
 export default function Home() {
   const webcamRef = useRef<Webcam | null>(null);
@@ -35,6 +36,8 @@ export default function Home() {
   const [visitor, setVisitor] = useState<VisitorDisplay | null>(null);
 
   const [modelsLoaded, setModelsLoaded] = useState(false);
+
+  const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
     if (visitor) {
@@ -60,118 +63,129 @@ export default function Home() {
   }, []);
 
   const handleScan = async () => {
-    if (!webcamRef.current) return;
+    setIsScanning(true);
 
-    const video = webcamRef.current.video as HTMLVideoElement;
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    const result = await scanFace(video);
+    try {
+      if (!webcamRef.current) return;
 
-    if (!result) {
-      alert("Face not detected");
-      return;
-    }
+      const video = webcamRef.current.video as HTMLVideoElement;
 
-    type DbVisitor = {
-      id: string;
-      name: string;
-      mobile: string;
-      gender: string;
-      flat_number: string;
-      purpose: string;
-      image_url: string;
-      face_descriptor: number[];
-    };
+      const result = await scanFace(video);
 
-    const visitors: DbVisitor[] = (await getVisitors()) || [];
-
-    let matchedVisitor: DbVisitor | null = null;
-
-    const liveDescriptor = Array.from(result.descriptor);
-
-    let bestDistance = Number.MAX_VALUE;
-
-    // const FACE_THRESHOLD = 0.5;
-
-    visitors?.forEach((visitor: DbVisitor) => {
-      if (!visitor.face_descriptor || visitor.face_descriptor.length !== 128) {
+      if (!result) {
+        alert("Face not detected");
         return;
       }
 
-      const distance = euclideanDistance(
-        liveDescriptor,
-        visitor.face_descriptor,
-      );
+      type DbVisitor = {
+        id: string;
+        name: string;
+        mobile: string;
+        gender: string;
+        flat_number: string;
+        purpose: string;
+        image_url: string;
+        face_descriptor: number[];
+      };
 
-      console.log(`Visitor: ${visitor.name} | Distance: ${distance}`);
+      const visitors: DbVisitor[] = (await getVisitors()) || [];
 
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        matchedVisitor = visitor;
+      let matchedVisitor: DbVisitor | null = null;
+
+      const liveDescriptor = Array.from(result.descriptor);
+
+      let bestDistance = Number.MAX_VALUE;
+
+      // const FACE_THRESHOLD = 0.5;
+
+      visitors?.forEach((visitor: DbVisitor) => {
+        if (
+          !visitor.face_descriptor ||
+          visitor.face_descriptor.length !== 128
+        ) {
+          return;
+        }
+
+        const distance = euclideanDistance(
+          liveDescriptor,
+          visitor.face_descriptor,
+        );
+
+        // console.log(`Visitor: ${visitor.name} | Distance: ${distance}`);
+
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          matchedVisitor = visitor;
+        }
+
+        // console.log(
+        //   "Best Match:",
+        //   matchedVisitor?.name,
+        //   "Distance:",
+        //   bestDistance,
+        // );
+      });
+
+      if (!result) {
+        alert("Face not detected");
+
+        return;
       }
 
-      // console.log(
-      //   "Best Match:",
-      //   matchedVisitor?.name,
-      //   "Distance:",
-      //   bestDistance,
-      // );
-    });
+      const emotion =
+        Object.entries(result.expressions)
+          .sort((a, b) => Number(b[1]) - Number(a[1]))
+          ?.at(0)?.[0] ?? "neutral";
 
-    if (!result) {
-      alert("Face not detected");
+      // setVisitor({
+      //   name: "Unknown Visitor",
+      //   age: Math.round(result.age),
+      //   gender: result.gender,
+      //   emotion,
+      // });
 
-      return;
-    }
+      if (matchedVisitor !== null && bestDistance < 0.5) {
+        const visitorData = matchedVisitor as any;
 
-    const emotion =
-      Object.entries(result.expressions)
-        .sort((a, b) => Number(b[1]) - Number(a[1]))
-        ?.at(0)?.[0] ?? "neutral";
+        await saveVisitLog({
+          visitor_id: visitorData.id,
 
-    // setVisitor({
-    //   name: "Unknown Visitor",
-    //   age: Math.round(result.age),
-    //   gender: result.gender,
-    //   emotion,
-    // });
+          visitor_name: visitorData.name,
 
-    if (matchedVisitor !== null && bestDistance < 0.50) {
-      const visitorData = matchedVisitor as any;
+          flat_number: visitorData.flat_number,
 
-      await saveVisitLog({
-        visitor_id: visitorData.id,
+          image_url: visitorData.image_url,
 
-        visitor_name: visitorData.name,
+          emotion,
 
-        flat_number: visitorData.flat_number,
+          estimated_age: Math.round(result.age),
+        });
 
-        image_url: visitorData.image_url,
+        setVisitor({
+          id: visitorData.id,
+          name: visitorData.name,
+          mobile: visitorData.mobile,
+          gender: visitorData.gender,
+          flat: visitorData.flat_number,
+          purpose: visitorData.purpose,
+          age: Math.round(result.age),
+          emotion,
+        });
+      } else {
+        setVisitor({
+          name: "Unknown Visitor",
 
-        emotion,
+          age: Math.round(result.age),
 
-        estimated_age: Math.round(result.age),
-      });
+          gender: result.gender,
 
-      setVisitor({
-        id: visitorData.id,
-        name: visitorData.name,
-        mobile: visitorData.mobile,
-        gender: visitorData.gender,
-        flat: visitorData.flat_number,
-        purpose: visitorData.purpose,
-        age: Math.round(result.age),
-        emotion,
-      });
-    } else {
-      setVisitor({
-        name: "Unknown Visitor",
-
-        age: Math.round(result.age),
-
-        gender: result.gender,
-
-        emotion,
-      });
+          emotion,
+        });
+      }
+    } finally {
+      setIsScanning(false);
     }
   };
 
@@ -187,7 +201,11 @@ export default function Home() {
           p-6
           "
         >
-          <Camera webcamRef={webcamRef} />
+          <div className="relative">
+            <Camera webcamRef={webcamRef} />
+
+            <FaceScanner scanning={isScanning} />
+          </div>
 
           <button
             disabled={!modelsLoaded}
