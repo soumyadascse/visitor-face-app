@@ -588,7 +588,7 @@ export default function RegisterVisitor() {
           {loading ? "Saving..." : "Register Visitor"}
         </button>
         </>
-        })
+        )}
       </div>
     </>
   );
