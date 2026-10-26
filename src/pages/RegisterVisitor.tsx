@@ -38,6 +38,10 @@ export default function RegisterVisitor() {
 
   const [cameraReady, setCameraReady] = useState(false);
 
+  const [facingMode, setFacingMode] = useState<"user" | "environment">(
+    /Android|iPhone|iPad/i.test(navigator.userAgent) ? "environment" : "user",
+  );
+
   //   const screenshot = webcamRef.current?.getScreenshot();
   //   setPhoto(screenshot ?? "");
 
@@ -148,7 +152,6 @@ export default function RegisterVisitor() {
 
       return;
     }
-
 
     const liveDescriptor = Array.from(face.descriptor);
 
@@ -395,13 +398,13 @@ export default function RegisterVisitor() {
             setCameraReady(true);
           }}
           audio={false}
-          mirrored
+          mirrored={facingMode === "user"}
           screenshotFormat="image/jpeg"
           screenshotQuality={1}
           videoConstraints={{
             width: 1280,
             height: 720,
-            facingMode: "user",
+            facingMode,
           }}
           className="
     rounded-lg
@@ -410,6 +413,19 @@ export default function RegisterVisitor() {
   "
         />
 
+        <div
+          className="
+  mb-4
+  text-sm
+  text-center
+  font-medium
+  text-blue-600
+  "
+        >
+          Active Camera:{" "}
+          {facingMode === "user" ? "Front Camera" : "Rear Camera"}
+        </div>
+
         {/* <div className="bg-gray-100 p-2 mb-2 text-sm">
           Face Captured: {faceCaptured ? "YES" : "NO"}
         </div>
@@ -417,7 +433,28 @@ export default function RegisterVisitor() {
         <div className="bg-gray-100 p-2 mb-2 text-sm">
           Photo Length: {photo.length}
         </div> */}
+        <div className="flex gap-3 mb-4">
+          <button
+            type="button"
+            onClick={() => {
+              setCameraReady(false);
 
+              setFacingMode((prev) =>
+                prev === "user" ? "environment" : "user",
+              );
+            }}
+            className="
+      bg-blue-600
+      hover:bg-blue-700
+      text-white
+      px-4
+      py-2
+      rounded
+    "
+          >
+            {facingMode === "user" ? "📷 Rear Camera" : "📷 Front Camera"}
+          </button>
+        </div>
         <button
           type="button"
           onClick={captureFace}
@@ -478,103 +515,103 @@ export default function RegisterVisitor() {
         )}
 
         {!existingVisitor && (
-        <>
-        <input
-          value={form.name}
-          placeholder="Visitor Name"
-          className="border p-3 w-full mb-1 rounded"
-          onChange={(e) =>
-            setForm({
-              ...form,
-              name: e.target.value,
-            })
-          }
-        />
+          <>
+            <input
+              value={form.name}
+              placeholder="Visitor Name"
+              className="border p-3 w-full mb-1 rounded"
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  name: e.target.value,
+                })
+              }
+            />
 
-        {errors.name && (
-          <p className="text-red-500 text-sm mb-3">{errors.name}</p>
-        )}
+            {errors.name && (
+              <p className="text-red-500 text-sm mb-3">{errors.name}</p>
+            )}
 
-        <input
-          value={form.mobile}
-          placeholder="Mobile Number"
-          className="border p-3 w-full mb-1 rounded"
-          onChange={(e) =>
-            setForm({
-              ...form,
-              mobile: e.target.value,
-            })
-          }
-        />
+            <input
+              value={form.mobile}
+              placeholder="Mobile Number"
+              className="border p-3 w-full mb-1 rounded"
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  mobile: e.target.value,
+                })
+              }
+            />
 
-        {errors.mobile && (
-          <p className="text-red-500 text-sm mb-3">{errors.mobile}</p>
-        )}
+            {errors.mobile && (
+              <p className="text-red-500 text-sm mb-3">{errors.mobile}</p>
+            )}
 
-        <input
-          value={form.flatNumber}
-          placeholder="Flat Number"
-          className="border p-3 w-full mb-1 rounded"
-          onChange={(e) =>
-            setForm({
-              ...form,
-              flatNumber: e.target.value,
-            })
-          }
-        />
+            <input
+              value={form.flatNumber}
+              placeholder="Flat Number"
+              className="border p-3 w-full mb-1 rounded"
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  flatNumber: e.target.value,
+                })
+              }
+            />
 
-        {errors.flatNumber && (
-          <p className="text-red-500 text-sm mb-3">{errors.flatNumber}</p>
-        )}
+            {errors.flatNumber && (
+              <p className="text-red-500 text-sm mb-3">{errors.flatNumber}</p>
+            )}
 
-        <input
-          value={form.purpose}
-          placeholder="Purpose of Visit"
-          className="border p-3 w-full mb-1 rounded"
-          onChange={(e) =>
-            setForm({
-              ...form,
-              purpose: e.target.value,
-            })
-          }
-        />
+            <input
+              value={form.purpose}
+              placeholder="Purpose of Visit"
+              className="border p-3 w-full mb-1 rounded"
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  purpose: e.target.value,
+                })
+              }
+            />
 
-        {errors.purpose && (
-          <p className="text-red-500 text-sm mb-3">{errors.purpose}</p>
-        )}
+            {errors.purpose && (
+              <p className="text-red-500 text-sm mb-3">{errors.purpose}</p>
+            )}
 
-        <select
-          value={form.gender}
-          className="border p-3 w-full mb-1 rounded"
-          onChange={(e) =>
-            setForm({
-              ...form,
-              gender: e.target.value,
-            })
-          }
-        >
-          <option value="">Select Gender</option>
+            <select
+              value={form.gender}
+              className="border p-3 w-full mb-1 rounded"
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  gender: e.target.value,
+                })
+              }
+            >
+              <option value="">Select Gender</option>
 
-          <option value="Male">Male</option>
+              <option value="Male">Male</option>
 
-          <option value="Female">Female</option>
+              <option value="Female">Female</option>
 
-          <option value="Other">Other</option>
-        </select>
+              <option value="Other">Other</option>
+            </select>
 
-        {errors.gender && (
-          <p className="text-red-500 text-sm mb-4">{errors.gender}</p>
-        )}
+            {errors.gender && (
+              <p className="text-red-500 text-sm mb-4">{errors.gender}</p>
+            )}
 
-        {/* <div className="bg-yellow-100 p-2 mb-2">
+            {/* <div className="bg-yellow-100 p-2 mb-2">
           Photo State:
           {photo ? "AVAILABLE" : "EMPTY"}
         </div> */}
 
-        <button
-          onClick={submit}
-          disabled={loading}
-          className="
+            <button
+              onClick={submit}
+              disabled={loading}
+              className="
             bg-blue-600
             hover:bg-blue-700
             text-white
@@ -584,10 +621,10 @@ export default function RegisterVisitor() {
             w-full
             disabled:bg-gray-400
           "
-        >
-          {loading ? "Saving..." : "Register Visitor"}
-        </button>
-        </>
+            >
+              {loading ? "Saving..." : "Register Visitor"}
+            </button>
+          </>
         )}
       </div>
     </>

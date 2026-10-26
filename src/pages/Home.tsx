@@ -42,6 +42,8 @@ export default function Home() {
 
   const [isScanning, setIsScanning] = useState(false);
 
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
+
   useEffect(() => {
     if (visitor) {
       visitorCardRef.current?.scrollIntoView({
@@ -194,9 +196,8 @@ export default function Home() {
           Name ${visitorData.name}.
           Estimated age ${Math.round(result.age)}.
           Gender ${visitorData.gender}.
-          Access granted.`
+          Access granted.`,
         );
-
       } else {
         setVisitor({
           name: "Unknown Visitor",
@@ -206,7 +207,7 @@ export default function Home() {
         });
         speak(
           `Unknown visitor detected.
-          Registration required.`
+          Registration required.`,
         );
       }
     } finally {
@@ -227,9 +228,43 @@ export default function Home() {
           "
         >
           <div className="relative">
-            <Camera webcamRef={webcamRef} />
+            <Camera webcamRef={webcamRef} facingMode={facingMode} />
 
             <FaceScanner scanning={isScanning} />
+          </div>
+
+          <div
+            className="
+  mb-4
+  text-sm
+  text-center
+  font-medium
+  text-blue-600
+  "
+          >
+            Active Camera:{" "}
+            {facingMode === "user" ? "Front Camera" : "Rear Camera"}
+          </div>
+
+          <div className="flex gap-3 mt-4">
+            <button
+              onClick={() =>
+                setFacingMode((prev) =>
+                  prev === "user" ? "environment" : "user",
+                )
+              }
+              className="
+      px-4
+      py-2
+      bg-blue-600
+      text-white
+      rounded-lg
+    "
+            >
+              {facingMode === "user"
+                ? "Switch to Rear Camera"
+                : "Switch to Front Camera"}
+            </button>
           </div>
 
           <button
